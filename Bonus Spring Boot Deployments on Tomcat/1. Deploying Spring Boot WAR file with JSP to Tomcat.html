@@ -1,0 +1,51 @@
+<p><strong>Deploy Spring Boot apps with JSP to Tomcat</strong></p><p>You can deploy a Spring Boot application using JSP to Tomcat. In this scenario, we will create a WAR file and deploy the WAR to the Tomcat server running externally. This is known as a traditional deployment.</p><p><br></p><p><strong>High-level steps</strong></p><p>1. Update main Spring Boot application</p><p>2. Update Maven POM file</p><p>3. Update application.properties</p><p>4. Move JSP view files to WEB-INF/view</p><p>5. Create WAR file</p><p>6. Deploy to Tomcat</p><p><br></p><p><strong>Spring Boot Reference Manual</strong></p><p>For full details on this process, see the <a href="https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-create-a-deployable-war-file" rel="noopener noreferrer" target="_blank">Spring Boot Reference Manual: Section 92.1 Creating a Deployable WAR file</a></p><p><br></p><p><strong>Working Example</strong></p><p>I have a full working project. You can download this app and perform test deployments to Tomcat</p><p>Download: <a href="https://drive.google.com/open?id=1jgjQ1DCpowDJxlFje-dS6rjoQKRcYtCe" rel="noopener noreferrer" target="_blank">deploy-spring-boot-and-jsp-on-tomcat.zip</a></p><p><br></p><p>This app is a very simple helloworld example that exposes a "/test" request mapping</p><p><br></p><pre class="prettyprint linenums">package org.demo.bootjsp.controller;
+ 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+ 
+@Controller
+public class HelloWorldController {
+ 
+    @RequestMapping("/test")
+    public String sayHello() {
+        return "hello";
+    }
+    
+}</pre><p><br></p><p>and a simple JSP page: hello.jsp</p><pre class="prettyprint linenums">    &lt;html&gt;&lt;body&gt;
+     
+    &lt;p&gt;
+    Hello World! Time is &lt;%= new java.util.Date() %&gt;
+    &lt;/p&gt;
+     
+    &lt;p&gt;
+    We are running on  &lt;%= application.getServerInfo() %&gt;!!!
+    &lt;/p&gt;
+     
+    &lt;/body&gt;&lt;/html&gt;</pre><p>----</p><p><strong>Detailed steps</strong></p><p><strong>1. Update main Spring Boot application</strong></p><p>In your main Spring Boot application, you need to</p><p>a. extend the SpringBootServletInitializer</p><p>b. override the configure(...) method</p><p><br></p><p>Your code should look like this</p><pre class="prettyprint linenums">package org.demo.bootjsp;
+ 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+ 
+@SpringBootApplication
+public class DemowebApplication extends SpringBootServletInitializer {
+ 
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(DemowebApplication.class);
+	}
+ 
+	public static void main(String[] args) {
+		SpringApplication.run(DemowebApplication.class, args);
+	}
+ 
+}</pre><p><br></p><p><strong>2. Update Maven POM file</strong></p><p>Update your POM.xml to use WAR packaging</p><p><code>&lt;packaging&gt;war&lt;/packaging&gt;</code></p><p>In POM.xml, add dependency to be able to compile JSPs</p><pre class="prettyprint linenums">&lt;dependency&gt;
+	&lt;groupId&gt;org.apache.tomcat.embed&lt;/groupId&gt;
+	&lt;artifactId&gt;tomcat-embed-jasper&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre><p><br></p><p>Make sure the Tomcat embedded does not interfere with external Tomcat server</p><pre class="prettyprint linenums">&lt;dependency&gt;
+	&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId&gt;spring-boot-starter-tomcat&lt;/artifactId&gt;
+	&lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</pre><p><br></p><p><strong>3. Update application.properties</strong></p><p>In your application.properties file, you should have</p><pre class="prettyprint linenums">spring.mvc.view.prefix=/WEB-INF/view/
+spring.mvc.view.suffix=.jsp</pre><p><br></p><p><strong>4. Move JSP view files to WEB-INF/view</strong></p><p>Move your JSP view pages should to <code>src/main/webapp/WEB-INF/view</code></p><p><br></p><p><strong>5. Create WAR file</strong></p><p>Create the WAR file with the command: <code>mvn clean package</code>  </p><p>This will generate a WAR file in your project directory:  <strong>target/bootjspdemo.war</strong></p><p><br></p><p>6. In Eclipse, stop all servers you may have running</p><p><br></p><p>7. Outside of Eclipse, run your Tomcat server</p><p><br></p><p>8. Copy your WAR file to the <strong>&lt;&lt;tomcat-install-dir&gt;&gt;/webapps</strong> directory</p><p>Wait for about 15-30 seconds for Tomcat to deploy your app. You will know your app is deployed when you see a new folder created based on your WAR file name. In our example, you will see a new directory named: <strong>bootjspdemo</strong></p><p><br></p><p>9. In a web browser, access your app at: <code>http://localhost:8080/bootjspdemo/test</code></p><p><em>Replace &lt;&lt;bootjspdemo&gt;&gt; with the name of your WAR file if you are using a different app</em></p><p><br></p><p>If everything is successful, you will see your application's web page.</p><p><br></p><p>Congratulations! You deployed a Spring Boot WAR file with JSP on to a Tomcat server :-)</p>

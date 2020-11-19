@@ -1,0 +1,54 @@
+<p><strong>Deploy Spring Boot apps with Thymeleaf to Tomcat</strong></p><p>You can deploy a Spring Boot application as a WAR file to Tomcat. In this scenario, we will use Thymeleaf as the view template. </p><p>We will create a WAR file and deploy the WAR to the Tomcat server. This is known as a traditional deployment.</p><p><br></p><p><strong>High-level steps</strong></p><p>1. Update main Spring Boot application</p><p>2. Update Maven POM file</p><p>3. Create WAR file</p><p>4. Deploy to Tomcat</p><p><br></p><p><strong>Spring Boot Reference Manual</strong></p><p>For full details on this process, see the <a href="https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto-create-a-deployable-war-file" rel="noopener noreferrer" target="_blank">Spring Boot Reference Manual: Section 92.1 Creating a Deployable WAR file</a></p><p><br></p><p><strong>Working Example</strong></p><p>I have a full working project. You can download this app and perform test deployments to Tomcat</p><p>Download: <a href="https://drive.google.com/open?id=1YhrLfvCCNUxJ9CFfFncbtVO3qdbc7FYI" rel="noopener noreferrer" target="_blank">deploy-spring-boot-war-with-thymeleaf-on-tomcat.zip</a></p><p><br></p><p>This app is a very simple helloworld example that exposes a "/test" request mapping</p><p><br></p><pre class="prettyprint linenums">package com.luv2code.deploydemo.controller;
+ 
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+ 
+@Controller
+public class HelloWorldController {
+ 
+    @RequestMapping("/test")
+    public String sayHello() {
+        return "hello";
+    }
+    
+}</pre><p><br></p><p>and a simple Thymeleaf page: hello.html</p><pre class="prettyprint linenums">&lt;!DOCTYPE HTML&gt;
+&lt;html lang="en" xmlns:th="http://www.thymeleaf.org"&gt;
+      
+&lt;body&gt;
+
+&lt;h3&gt;Hello World from Thymeleaf!&lt;/h3&gt;
+
+&lt;p&gt;
+We are running on &lt;span th:text="${#servletContext.getServerInfo()}"&gt;&lt;/span&gt;!!!
+&lt;/p&gt;
+
+
+&lt;/body&gt;
+
+&lt;/html&gt;</pre><p>----</p><p><strong>Detailed steps</strong></p><p><strong>1. Update main Spring Boot application</strong></p><p>In your main Spring Boot application, you need to</p><p>a. extend the SpringBootServletInitializer</p><p>b. override the configure(...) method</p><p><br></p><p>Your code should look like this</p><pre class="prettyprint linenums">package com.luv2code.deploydemo;
+ 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+ 
+@SpringBootApplication
+public class DeploydemoApplication extends SpringBootServletInitializer {
+ 
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(DeploydemoApplication.class);
+	}
+ 
+	public static void main(String[] args) {
+		SpringApplication.run(DeploydemoApplication.class, args);
+	}
+ 
+}</pre><p><br></p><p><strong>2. Update Maven POM file</strong></p><p>Update your POM.xml to use WAR packaging</p><p><code>&lt;packaging&gt;war&lt;/packaging&gt;</code></p><p>The WAR packaging should appear just after your Maven coordinates (group, artifact, version)</p><pre class="prettyprint linenums">	&lt;groupId&gt;com.luv2code&lt;/groupId&gt;
+	&lt;artifactId&gt;deploydemo&lt;/artifactId&gt;
+	&lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
+	&lt;packaging&gt;war&lt;/packaging&gt;</pre><p>Make sure the Tomcat embedded does not interfere with external Tomcat server</p><pre class="prettyprint linenums">&lt;dependency&gt;
+	&lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+	&lt;artifactId&gt;spring-boot-starter-tomcat&lt;/artifactId&gt;
+	&lt;scope&gt;provided&lt;/scope&gt;
+&lt;/dependency&gt;</pre><p><br></p><p><strong>3. Create WAR file</strong></p><p>Create the WAR file with the command: <code>mvn clean package</code>  </p><p>This will generate a WAR file in your project directory:  <strong>target/deploydemo.war</strong></p><p><br></p><p>4. In Eclipse, stop all servers you may have running</p><p><br></p><p>5. Outside of Eclipse, run your Tomcat server</p><p><br></p><p>6. Copy your WAR file to the <strong>&lt;&lt;tomcat-install-dir&gt;&gt;/webapps</strong> directory</p><p>Wait for about 15-30 seconds for Tomcat to deploy your app. You will know your app is deployed when you see a new folder created based on your WAR file name. In our example, you will see a new directory named: <strong>deploydemo</strong></p><p><br></p><p>7. In a web browser, access your app at: <code>http://localhost:8080/deploydemo/test</code></p><p><em>Replace &lt;&lt;deploydemo&gt;&gt; with the name of your WAR file if you are using a different app</em></p><p><br></p><p>If everything is successful, you will see your application's web page.</p><p><br></p><p>Congratulations! You deployed a Spring Boot WAR file with Thymeleaf on a Tomcat server :-)</p>
